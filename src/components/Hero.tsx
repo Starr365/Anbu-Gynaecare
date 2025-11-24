@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 const Hero = () => {
   return (
@@ -11,12 +12,12 @@ const Hero = () => {
           Track your cycle, shop eco-friendly pads, and join a supportive community—all in one place.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300">
+          <Link href="/register" className="bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 inline-block text-center">
             Get Started Free
-          </button>
-          <button className="bg-glass text-text font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300">
+          </Link>
+          <Link href="/login" className="bg-glass text-text font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 inline-block text-center">
             I Have an Account
-          </button>
+          </Link>
         </div>
         <div className="mt-8 text-6xl">
           🌸
