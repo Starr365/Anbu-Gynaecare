@@ -16,7 +16,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Anbu Gynaecare",
   description: "Period care that loves you back.",
-  manifest: "/manifest.json",
+  manifest: "/manifest.ts",
+   icons: {
+    icon: '/icon/icon-192x192.png',
+    apple: '/icon/icon-192x192.png',
+  },
 };
 
 export default function RootLayout({

@@ -14,13 +14,13 @@ const Testimonials = () => {
   ];
 
   return (
-    <section className="py-16 px-4 bg-sand">
+    <section className="py-16 px-4 bg-linear-to-br from-rose to-blush/20">
       <div className="max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="bg-bg rounded-2xl p-6 shadow-soft animate-slide-up"
+              className="bg-sand/80 rounded-2xl p-6 shadow-soft animate-slide-up"
               style={{ animationDelay: `${index * 0.2}s` }}
             >
               <div className="flex mb-4">

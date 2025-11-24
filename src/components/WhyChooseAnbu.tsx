@@ -21,7 +21,7 @@ const WhyChooseAnbu = () => {
   ];
 
   return (
-    <section className="py-16 px-4 bg-bg">
+    <section className="py-16 px-4">
       <div className="max-w-4xl mx-auto">
         <h2 className="font-headline text-3xl md:text-4xl font-semibold text-center mb-12 text-text">
           Why Choose Anbu?
@@ -30,13 +30,15 @@ const WhyChooseAnbu = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-sand rounded-2xl p-6 shadow-soft animate-slide-up"
+              className="bg-bg rounded-2xl p-6 shadow-soft animate-slide-up"
               style={{ animationDelay: `${index * 0.2}s` }}
             >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="font-headline text-xl font-semibold mb-2 text-text">
-                {feature.title}
-              </h3>
+              <div className="flex flex-row gap-4 mb-2 md:flex-col md:items-center">
+                <span>{feature.icon}</span>
+                <h3 className="font-headline text-xl font-semibold mb-2 text-text">
+                  {feature.title}
+                </h3>
+              </div>
               <p className="font-body text-muted">{feature.description}</p>
             </div>
           ))}
