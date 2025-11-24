@@ -82,13 +82,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-mint to-lavender flex items-center justify-center px-4">
-      <div className="bg-bg rounded-2xl shadow-soft max-w-md w-full p-8 animate-fade-in">
+    <div className="min-h-screen bg-linear-to-br from-accent/20 to-blush flex items-center justify-center px-4">
+      <div className="mt-8 mb-8 bg-bg rounded-2xl shadow-soft max-w-md w-full p-8 animate-fade-in">
         <div className="text-center mb-8">
           <h1 className="font-headline text-3xl font-semibold text-text mb-2">
             Anbu Gynaecare
           </h1>
-          <h2 className="font-headline text-2xl font-semibold text-text mb-4">
+          <h2 className="font-headline text-xl font-semibold text-text mb-4">
             Create Your Free Account 🌸
           </h2>
         </div>
@@ -172,7 +172,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-accent/70 text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Account...' : 'Sign Up'}
           </button>

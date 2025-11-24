@@ -53,14 +53,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-rose to-blush flex items-center justify-center px-4">
+    <div className="min-h-screen bg-linear-to-br from-accent/20 to-blush flex items-center justify-center px-4">
       <div className="bg-bg rounded-2xl shadow-soft max-w-md w-full p-8 animate-fade-in">
         <div className="text-center mb-8">
           <h1 className="font-headline text-3xl font-semibold text-text mb-2">
             Anbu Gynaecare
           </h1>
           <h2 className="font-headline text-2xl font-semibold text-text mb-4">
-            Welcome Back 💛
+            Welcome Back🌸
           </h2>
         </div>
         {error && (
@@ -78,7 +78,7 @@ export default function Login() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border border-muted bg-bg shadow-inner-subtle focus:outline-none focus:ring-2 focus:ring-accent"
+              className="required w-full px-4 py-3 rounded-2xl border border-muted bg-bg shadow-inner-subtle focus:outline-none focus:ring-2 focus:ring-accent"
               required
               disabled={loading}
             />
@@ -92,20 +92,20 @@ export default function Login() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border border-muted bg-bg shadow-inner-subtle focus:outline-none focus:ring-2 focus:ring-accent"
+              className="required w-full px-4 py-3 rounded-2xl border border-muted bg-bg shadow-inner-subtle focus:outline-none focus:ring-2 focus:ring-accent"
               required
               disabled={loading}
             />
           </div>
           <div className="text-right">
-            <a href="#" className="font-body text-sm text-accent hover:underline">
+            <Link href="/forgot-password" className="font-body text-sm text-accent hover:underline">
               Forgot Password?
-            </a>
+            </Link>
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-accent/70 text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>

@@ -6,7 +6,7 @@ import FinalCTA from './FinalCTA';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-linear-to-br from-sand to-rose flex flex-col">
+    <main className="min-h-screen bg-linear-to-br from-sand to-rose">
       <Hero />
       <WhyChooseAnbu />
       <Tools />
