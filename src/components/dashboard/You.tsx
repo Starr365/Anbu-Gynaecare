@@ -3,14 +3,28 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Settings, Bell, Shield, HelpCircle, MessageSquare, Info, LogOut } from 'lucide-react';
+import { logoutUser } from '@/services/auth';
+import { clearUserCache } from '@/services/user';
+import { clearLogsCache } from '@/services/logs';
+import { clearPredictionsCache } from '@/services/predictions';
+import { clearProductsCache } from '@/services/products';
 import BottomNavigation from './BottomNavigation';
 
 const You = () => {
   const router = useRouter();
 
   const handleLogout = () => {
-    // Simulate logout
-    router.push('/');
+    // Clear all authentication tokens and cached data
+    logoutUser();
+
+    // Clear all cached API data
+    clearUserCache();
+    clearLogsCache();
+    clearPredictionsCache();
+    clearProductsCache();
+
+    // Redirect to login page
+    router.push('/login');
   };
   return (
     <div className="min-h-screen bg-bg pb-20">

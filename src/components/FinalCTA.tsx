@@ -3,7 +3,7 @@ import React from 'react';
 
 const FinalCTA = () => {
   return (
-    <section className="py-16 px-4 bg-linear-to-bl from-sand/10 to-blush text-center">
+    <section className="py-16 px-4 bg-linear-to-br from-sand/10 to-blush text-center">
       <div className="max-w-md mx-auto animate-fade-in">
         <h2 className="font-headline text-3xl md:text-4xl font-semibold mb-4 text-text">
           Ready to get started?

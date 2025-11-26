@@ -2,10 +2,18 @@
 
 import React, { useState } from 'react';
 import { Droplet, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCycleLogs, useCyclePredictions } from '@/hooks/useCycle';
+import { formatPredictionDate } from '@/services/predictions';
 import BottomNavigation from './BottomNavigation';
 
 const Track = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  
+  // Fetch cycle data
+  const { logs, logsLoading, error: logsError, createLog } = useCycleLogs();
+  const { prediction, daysUntil, loading: predictionsLoading, error: predictionsError } = useCyclePredictions();
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -35,20 +43,46 @@ const Track = () => {
     if (day === today && month === currentMonth && year === currentYear) {
       classes += 'ring-2 ring-accent ';
     }
-    // Simulate period days (e.g., days 12-16)
-    if (day >= 12 && day <= 16) {
+    
+    // Check if day has a log entry
+    const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const hasLog = logs.some(log => {
+      const logDateStr = log.date || log.createdAt;
+      const logDate = new Date(logDateStr).toISOString().split('T')[0];
+      return logDate === dayString;
+    });
+    
+    if (hasLog) {
       classes += 'bg-red-100 text-red-600 ';
     }
-    // Fertile days (e.g., days 14-18)
-    if (day >= 14 && day <= 18) {
-      classes += 'bg-green-100 text-green-600 ';
+    
+    // Fertile days (estimated based on cycle)
+    if (prediction && daysUntil) {
+      const fertileStartDay = daysUntil - 5;
+      const fertileEndDay = daysUntil + 5;
+      const daysFromNow = Math.floor((new Date(year, month, day).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      if (daysFromNow >= fertileStartDay && daysFromNow <= fertileEndDay) {
+        classes += 'bg-green-100 text-green-600 ';
+      }
     }
     return classes.trim();
   };
 
   const getDayEmoji = (day: number) => {
-    if (day >= 12 && day <= 16) return '🩸';
-    if (day >= 14 && day <= 18) return '🌸';
+    const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const hasLog = logs.some(log => {
+      const logDateStr = log.date || log.createdAt;
+      const logDate = new Date(logDateStr).toISOString().split('T')[0];
+      return logDate === dayString;
+    });
+    if (hasLog) return '🩸';
+    
+    if (prediction && daysUntil) {
+      const fertileStartDay = daysUntil - 5;
+      const fertileEndDay = daysUntil + 5;
+      const daysFromNow = Math.floor((new Date(year, month, day).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      if (daysFromNow >= fertileStartDay && daysFromNow <= fertileEndDay) return '🌸';
+    }
     return '';
   };
 
@@ -121,24 +155,60 @@ const Track = () => {
               Today
             </div>
           </div>
-          <button className="w-full mt-6 bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300">
-            Log Today&apos;s Details
+          <button 
+            onClick={() => {
+              setSelectedDate(new Date().toISOString().split('T')[0]);
+              setShowLogModal(true);
+            }}
+            className="w-full mt-6 bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 disabled:opacity-50"
+            disabled={logsLoading}
+          >
+            {logsLoading ? 'Loading...' : 'Log Today&apos;s Details'}
           </button>
+          {logsError && <p className="text-accent text-sm mt-2">{logsError}</p>}
         </div>
       </section>
 
       {/* Predictions */}
       <section className="px-4 py-6">
         <div className="max-w-md mx-auto space-y-4">
-          <div className="bg-blush rounded-2xl p-4 shadow-soft">
-            <h3 className="font-headline text-lg font-semibold mb-2">Next Period: Nov 23 (5 days)</h3>
-          </div>
-          <div className="bg-mint rounded-2xl p-4 shadow-soft">
-            <h3 className="font-headline text-lg font-semibold mb-2">Cycle Length: 28 days</h3>
-          </div>
-          <div className="bg-lavender rounded-2xl p-4 shadow-soft">
-            <h3 className="font-headline text-lg font-semibold mb-2">Period Length: 5 days</h3>
-          </div>
+          {predictionsLoading ? (
+            <div className="bg-blush rounded-2xl p-4 shadow-soft animate-pulse">
+              <div className="h-6 bg-muted/20 rounded w-3/4"></div>
+            </div>
+          ) : predictionsError ? (
+            <div className="bg-blush rounded-2xl p-4 shadow-soft">
+              <p className="text-accent text-sm">{predictionsError}</p>
+            </div>
+          ) : prediction ? (
+            <>
+              <div className="bg-blush rounded-2xl p-4 shadow-soft">
+                <h3 className="font-headline text-lg font-semibold">
+                  Next Period: {prediction.predictedDate ? formatPredictionDate(prediction.predictedDate) : 'N/A'} 
+                  {daysUntil && <span className="text-accent"> ({daysUntil} days)</span>}
+                </h3>
+              </div>
+              {prediction.cycle_length && (
+                <div className="bg-mint rounded-2xl p-4 shadow-soft">
+                  <h3 className="font-headline text-lg font-semibold">Cycle Length: {prediction.cycle_length} days</h3>
+                </div>
+              )}
+              {prediction.period_length && (
+                <div className="bg-lavender rounded-2xl p-4 shadow-soft">
+                  <h3 className="font-headline text-lg font-semibold">Period Length: {prediction.period_length} days</h3>
+                </div>
+              )}
+              {prediction.confidence && (
+                <div className="bg-sand rounded-2xl p-4 shadow-soft">
+                  <h3 className="font-headline text-lg font-semibold">Confidence: {prediction.confidence}%</h3>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="bg-blush rounded-2xl p-4 shadow-soft">
+              <p className="font-body text-muted">Complete your cycle setup to see predictions</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -150,11 +220,100 @@ const Track = () => {
             <h2 className="font-headline text-lg font-semibold text-text">Today&apos;s Tip</h2>
           </div>
           <p className="font-body text-sm text-muted mb-4">
-            💡 You&apos;re in your&apos; follicular phase.<br />
-            Great time for trying new activities & socializing!
+            💡 {logs.length > 0 ? 'Great job logging your cycle! Keep it up for better predictions.' : 'Start logging your cycle to get personalized tips and predictions.'}
           </p>
         </div>
       </section>
+
+      {/* Log Modal */}
+      {showLogModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-bg rounded-2xl p-6 max-w-sm w-full max-h-96 overflow-y-auto">
+            <h2 className="font-headline text-xl font-semibold mb-4">Log Your Period</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block font-body text-sm font-medium text-text mb-2">
+                  Flow Intensity
+                </label>
+                <select 
+                  id="flow"
+                  className="w-full px-4 py-2 rounded-xl border border-muted bg-bg"
+                  defaultValue="light"
+                >
+                  <option value="none">None</option>
+                  <option value="light">Light</option>
+                  <option value="medium">Medium</option>
+                  <option value="heavy">Heavy</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-body text-sm font-medium text-text mb-2">
+                  How are you feeling?
+                </label>
+                <select 
+                  id="feeling"
+                  className="w-full px-4 py-2 rounded-xl border border-muted bg-bg"
+                  defaultValue="moody"
+                >
+                  <option value="moody">Moody</option>
+                  <option value="tired">Tired</option>
+                  <option value="irritable">Irritable</option>
+                  <option value="stressed">Stressed</option>
+                  <option value="energetic">Energetic</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-body text-sm font-medium text-text mb-2">
+                  Symptoms
+                </label>
+                <div className="space-y-2">
+                  {['cramps', 'bloating', 'headache', 'fatigue', 'nausea'].map(symptom => (
+                    <label key={symptom} className="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        value={symptom}
+                        className="mr-2"
+                        id={`symptom-${symptom}`}
+                      />
+                      <span className="font-body text-sm capitalize">{symptom}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setShowLogModal(false)}
+                className="flex-1 bg-muted text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const flow = (document.getElementById('flow') as HTMLSelectElement)?.value;
+                  const feeling = (document.getElementById('feeling') as HTMLSelectElement)?.value;
+                  const symptoms = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                    .map(el => (el as HTMLInputElement).value);
+                  
+                  await createLog({
+                    period_flow: flow as 'none' | 'light' | 'medium' | 'heavy',
+                    feeling: feeling as 'moody' | 'tired' | 'irritable' | 'stressed' | 'energetic',
+                    symptoms,
+                  });
+                  setShowLogModal(false);
+                }}
+                className="flex-1 bg-accent text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300"
+              >
+                Save Log
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNavigation />
     </div>

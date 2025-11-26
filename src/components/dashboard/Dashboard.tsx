@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Calendar, Droplet, ShoppingBag, BookOpen, User, Heart, Recycle, Users as UsersIcon, X } from 'lucide-react';
+import { useCyclePredictions, useCycleLogs } from '@/hooks/useCycle';
+import { formatPredictionDate } from '@/services/predictions';
 import BottomNavigation from './BottomNavigation';
 import CycleOnboarding from '../CycleOnboarding';
 
@@ -22,6 +24,10 @@ const Dashboard = () => {
       return false;
     }
   });
+
+  // Fetch cycle data
+  const { prediction, daysUntil, loading: predictionsLoading } = useCyclePredictions();
+  const { logs } = useCycleLogs();
 
   const handleTrackClick = () => {
     setShowOnboarding(true);
@@ -106,16 +112,31 @@ const Dashboard = () => {
             <h2 className="font-headline text-xl font-semibold text-text">Next Period In</h2>
             <Calendar className="w-6 h-6 text-accent" />
           </div>
-          <div className="text-center mb-4">
-            <span className="font-headline text-4xl font-bold text-accent">5</span>
-            <span className="font-body text-lg text-muted ml-2">Days</span>
-          </div>
-          <p className="font-body text-sm text-muted mb-4">
-            Expected on November 23. Your cycle is regular at 28 days.
-          </p>
-          <button className="w-full bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300">
+          {predictionsLoading ? (
+            <div className="animate-pulse">
+              <div className="h-12 bg-muted/20 rounded w-1/3 mx-auto mb-4"></div>
+              <div className="h-4 bg-muted/20 rounded w-2/3 mx-auto"></div>
+            </div>
+          ) : prediction && daysUntil ? (
+            <>
+              <div className="text-center mb-4">
+                <span className="font-headline text-4xl font-bold text-accent">{daysUntil}</span>
+                <span className="font-body text-lg text-muted ml-2">Days</span>
+              </div>
+              <p className="font-body text-sm text-muted mb-4">
+                Expected on {prediction.predictedDate ? formatPredictionDate(prediction.predictedDate) : 'N/A'}. 
+                {prediction.cycle_length && ` Your cycle is regular at ${prediction.cycle_length} days.`}
+              </p>
+            </>
+          ) : (
+            <p className="font-body text-sm text-muted text-center">Complete your cycle setup to see predictions</p>
+          )}
+          <Link 
+            href="/track"
+            className="w-full bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 block text-center"
+          >
             Track Today
-          </button>
+          </Link>
         </div>
         </section>
       )}
@@ -173,16 +194,19 @@ const Dashboard = () => {
       </section>
 
       {/* Low Supply Warning */}
-      {hasCompletedOnboarding && (
+      {hasCompletedOnboarding && daysUntil && daysUntil <= 7 && (
         <section className="px-4 py-6">
         <div className="max-w-md mx-auto bg-sand rounded-2xl p-6 shadow-soft">
           <h2 className="font-headline text-lg font-semibold text-text mb-4">Running Low on Pads?</h2>
           <p className="font-body text-sm text-muted mb-4">
-            Based on your cycle, you&apos;ll need more pads in 5 days.
+            Based on your cycle, you&apos;ll need more pads in {daysUntil} days.
           </p>
-          <button className="bg-accent text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300">
+          <Link 
+            href="/shop"
+            className="bg-accent text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300 inline-block"
+          >
             Order Now
-          </button>
+          </Link>
         </div>
         </section>
       )}

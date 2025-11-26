@@ -1,22 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShoppingCart, Leaf, Cloud, User, Package } from 'lucide-react';
+import { ShoppingCart, Leaf, Cloud, User, Package, X } from 'lucide-react';
+import { useProducts, useShoppingCart } from '@/hooks/useProducts';
+import { formatPrice } from '@/services/products';
 import BottomNavigation from './BottomNavigation';
 
 const Shop = () => {
   const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState<{ name: string; price: string }[]>([]);
-
-  const products = [
-    { name: 'Regular Flow Pack', details: '10 pads', price: '₦3,200' },
-    { name: 'Light Flow Pack', details: '12 pads', price: '₦2,800' },
-    { name: 'Heavy Flow Pack', details: '8 pads', price: '₦3,500' },
-  ];
-
-  const addToCart = (product: { name: string; price: string }) => {
-    setCart([...cart, product]);
-  };
+  const { products, loading, error } = useProducts();
+  const { cart, itemCount, cartTotal, addToCart, removeFromCart, updateQuantity, clearCart } = useShoppingCart();
 
   return (
     <div className="min-h-screen bg-bg pb-20">
@@ -35,6 +28,11 @@ const Shop = () => {
             className="absolute top-0 right-0 bg-accent text-bg p-2 rounded-full shadow-soft"
           >
             <ShoppingCart className="w-5 h-5" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
           </button>
         </div>
       </section>
@@ -42,21 +40,49 @@ const Shop = () => {
       {/* Products */}
       <section className="px-4 py-6">
         <div className="max-w-md mx-auto space-y-4">
-          {products.map((product, index) => (
-            <div key={index} className="bg-sand rounded-2xl p-4 shadow-soft">
-              <h3 className="font-headline text-lg font-semibold mb-1">{product.name}</h3>
-              <p className="font-body text-sm text-muted mb-2">{product.details}</p>
-              <div className="flex justify-between items-center">
-                <span className="font-headline text-xl font-bold text-accent">{product.price}</span>
-                <button
-                  onClick={() => addToCart(product)}
-                  className="bg-accent text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300"
-                >
-                  Add to Cart
-                </button>
-              </div>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="bg-sand rounded-2xl p-4 shadow-soft animate-pulse">
+                  <div className="h-6 bg-muted/20 rounded mb-2 w-3/4"></div>
+                  <div className="h-4 bg-muted/20 rounded mb-2 w-1/2"></div>
+                  <div className="h-4 bg-muted/20 rounded w-1/3"></div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : error ? (
+            <div className="bg-sand rounded-2xl p-4 shadow-soft">
+              <p className="font-body text-sm text-accent">{error}</p>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="bg-sand rounded-2xl p-4 shadow-soft">
+              <p className="font-body text-sm text-muted text-center">No products available</p>
+            </div>
+          ) : (
+            products.map((product) => (
+              <div key={product.id} className="bg-sand rounded-2xl p-4 shadow-soft">
+                <h3 className="font-headline text-lg font-semibold mb-1">{product.title}</h3>
+                <p className="font-body text-sm text-muted mb-2">{product.number_of_pad} pads per pack</p>
+                {product.description && (
+                  <p className="font-body text-xs text-muted mb-2">{product.description}</p>
+                )}
+                {product.environmental_impact && (
+                  <p className="font-body text-xs text-green-600 mb-2">🌱 {product.environmental_impact}</p>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="font-headline text-xl font-bold text-accent">
+                    {product.price ? formatPrice(product.price) : 'N/A'}
+                  </span>
+                  <button
+                    onClick={() => addToCart(product)}
+                    className="bg-accent text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
@@ -132,27 +158,77 @@ const Shop = () => {
 
       {/* Cart Modal */}
       {cartOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-bg rounded-2xl p-6 max-w-sm w-full mx-4">
-            <h2 className="font-headline text-xl font-semibold mb-4">Cart</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-bg rounded-2xl p-6 max-w-sm w-full max-h-96 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-headline text-xl font-semibold">Shopping Cart</h2>
+              <button
+                onClick={() => setCartOpen(false)}
+                className="p-1 rounded-full hover:bg-muted"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
             {cart.length === 0 ? (
-              <p className="font-body text-muted">Your cart is empty</p>
+              <p className="font-body text-muted text-center py-8">Your cart is empty</p>
             ) : (
-              <ul className="space-y-2 mb-4">
-                {cart.map((item, index) => (
-                  <li key={index} className="flex justify-between font-body text-sm">
-                    <span>{item.name}</span>
-                    <span>{item.price}</span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <div className="space-y-3 mb-6 border-b border-muted pb-4">
+                  {cart.map((item) => (
+                    <div key={item.product.id} className="flex justify-between items-start font-body text-sm">
+                      <div className="flex-1">
+                        <p className="font-semibold">{item.product.title}</p>
+                        <p className="text-muted text-xs">₦{item.product.price} × {item.quantity}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          className="text-muted hover:text-accent"
+                        >
+                          −
+                        </button>
+                        <span className="w-6 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          className="text-muted hover:text-accent"
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="text-accent hover:text-rose ml-2"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-4 p-3 bg-blush/20 rounded-lg">
+                  <div className="flex justify-between font-headline font-semibold text-lg">
+                    <span>Total:</span>
+                    <span className="text-accent">{formatPrice(cartTotal)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => clearCart()}
+                    className="flex-1 bg-muted text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300"
+                  >
+                    Clear Cart
+                  </button>
+                  <button
+                    onClick={() => setCartOpen(false)}
+                    className="flex-1 bg-accent text-bg font-semibold py-2 px-4 rounded-xl shadow-soft hover:scale-105 transition-transform duration-300"
+                  >
+                    Checkout
+                  </button>
+                </div>
+              </>
             )}
-            <button
-              onClick={() => setCartOpen(false)}
-              className="w-full bg-accent text-bg font-semibold py-2 px-4 rounded-xl shadow-soft"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}
