@@ -31,6 +31,7 @@ export default function ForgotPasswordPage() {
                             id="email"
                             name="email"
                             placeholder="Enter your email"
+                            autoComplete="email"
                             className="w-full px-4 py-3 rounded-2xl border border-white/30 bg-white/10 backdrop-blur-sm text-text placeholder-muted/70 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-300"
                         />
                     </div>

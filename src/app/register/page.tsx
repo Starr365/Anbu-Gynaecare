@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { registerUser } from '@/services/auth';
 import { RegisterPayload } from '@/types/api';
 import { formatErrorForDisplay, parseValidationErrors, isNetworkError } from '@/libs/error-handler';
+import { validatePassword, getPasswordErrorMessage } from '@/utils/passwordValidation';
 import AuthRedirect from '@/components/AuthRedirect';
 
 export default function Register() {
@@ -18,11 +19,13 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setPasswordError('');
     setLoading(true);
 
     try {
@@ -39,8 +42,10 @@ export default function Register() {
         return;
       }
 
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters long');
+      // Validate password strength
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        setError(getPasswordErrorMessage(passwordValidation));
         setLoading(false);
         return;
       }
@@ -64,6 +69,7 @@ export default function Register() {
       if (response.data?.user?.id) {
         // Clear any previous errors
         setError('');
+        setPasswordError('');
         router.push('/dashboard');
       } else {
         setError('Registration failed. Please try again.');
@@ -135,6 +141,7 @@ export default function Register() {
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3 rounded-2xl border border-blush/50 bg-white/50 text-text placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 focus:bg-white transition-all duration-300"
                 placeholder="Enter your name"
+                autoComplete="name"
                 required
                 disabled={loading}
               />
@@ -151,6 +158,7 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-2xl border border-blush/50 bg-white/50 text-text placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 focus:bg-white transition-all duration-300"
                 placeholder="Enter your email"
+                autoComplete="email"
                 required
                 disabled={loading}
               />
@@ -167,6 +175,7 @@ export default function Register() {
                 onChange={(e) => setAge(e.target.value)}
                 className="w-full px-4 py-3 rounded-2xl border border-blush/50 bg-white/50 text-text placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 focus:bg-white transition-all duration-300"
                 placeholder="Enter your age"
+                autoComplete="off"
                 required
                 disabled={loading}
                 min="13"
@@ -183,8 +192,19 @@ export default function Register() {
                   id="password"
                   value={password}
                   onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (confirmPassword && e.target.value !== confirmPassword) {
+                    const newPassword = e.target.value;
+                    setPassword(newPassword);
+
+                    // Validate password strength in real-time
+                    if (newPassword) {
+                      const validation = validatePassword(newPassword);
+                      setPasswordError(validation.isValid ? '' : getPasswordErrorMessage(validation));
+                    } else {
+                      setPasswordError('');
+                    }
+
+                    // Check password confirmation match
+                    if (confirmPassword && newPassword !== confirmPassword) {
                       setConfirmPasswordError('Passwords do not match');
                     } else {
                       setConfirmPasswordError('');
@@ -192,9 +212,13 @@ export default function Register() {
                   }}
                   className="w-full px-4 py-3 rounded-2xl border border-blush/50 bg-white/50 text-text placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 focus:bg-white transition-all duration-300"
                   placeholder="Create password"
+                  autoComplete="new-password"
                   required
                   disabled={loading}
                 />
+                {passwordError && (
+                  <p className="font-body text-sm text-accent mt-1">{passwordError}</p>
+                )}
               </div>
               
               <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
@@ -215,6 +239,7 @@ export default function Register() {
                   }}
                   className="w-full px-4 py-3 rounded-2xl border border-blush/50 bg-white/50 text-text placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 focus:bg-white transition-all duration-300"
                   placeholder="Confirm password"
+                  autoComplete="new-password"
                   required
                   disabled={loading}
                 />

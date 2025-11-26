@@ -98,6 +98,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-2xl border border-blush/50 bg-white/50 text-text placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 focus:bg-white transition-all duration-300"
                 placeholder="Enter your email"
+                autoComplete="email"
                 required
                 disabled={loading}
               />
@@ -114,6 +115,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-2xl border border-blush/50 bg-white/50 text-text placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 focus:bg-white transition-all duration-300"
                 placeholder="Enter your password"
+                autoComplete="current-password"
                 required
                 disabled={loading}
               />
