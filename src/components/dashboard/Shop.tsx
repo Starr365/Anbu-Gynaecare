@@ -43,7 +43,7 @@ const Shop = () => {
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-sand rounded-2xl p-4 shadow-soft animate-pulse">
+                <div key={i} className="bg-sand rounded-2xl p-4 shadow-soft">
                   <div className="h-6 bg-muted/20 rounded mb-2 w-3/4"></div>
                   <div className="h-4 bg-muted/20 rounded mb-2 w-1/2"></div>
                   <div className="h-4 bg-muted/20 rounded w-1/3"></div>

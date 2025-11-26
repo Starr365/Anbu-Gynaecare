@@ -1,6 +1,29 @@
+'use client';
+
 import React from 'react';
 import { Calendar, ShoppingBag, BookOpen, Users } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6 },
+  },
+};
 
 const Tools = () => {
   const tools = [
@@ -27,17 +50,30 @@ const Tools = () => {
   ];
 
   return (
-    <section className="py-16 px-4 bg-linear-to-br from-mint/20 to-rose">
+    <motion.section
+      className="py-16 px-4 bg-linear-to-br from-mint/20 to-rose"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+    >
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="font-headline text-3xl md:text-4xl font-semibold mb-12 text-text">
+        <motion.h2
+          className="font-headline text-3xl md:text-4xl font-semibold mb-12 text-text"
+          variants={itemVariants}
+        >
           Everything you need
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+        </motion.h2>
+        <motion.div
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12"
+          variants={containerVariants}
+        >
           {tools.map((tool, index) => (
-            <div
+            <motion.div
               key={index}
-              className="bg-sand/80 rounded-xl shadow-md p-4 shadow-soft animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="bg-sand/80 rounded-xl shadow-md p-4 shadow-soft"
+              variants={itemVariants}
+              whileHover={{ scale: 1.05 }}
             >
               <div className='flex flex-row gap-2 md:items-center'>
                 <span className="">{tool.icon}</span>
@@ -46,14 +82,19 @@ const Tools = () => {
                 </h3>
               </div>
               <p className="font-body text-sm text-muted align-start">{tool.description}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
-        <Link href="/register" className="bg-accent text-bg font-semibold py-3 px-8 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300">
-          Start Your Journey
-        </Link>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Link
+            href="/register"
+            className="bg-accent text-bg font-semibold py-3 px-8 rounded-2xl shadow-soft inline-block"
+          >
+            Start Your Journey
+          </Link>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

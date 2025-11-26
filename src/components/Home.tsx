@@ -1,3 +1,5 @@
+'use client';
+
 import Hero from './Hero';
 import WhyChooseAnbu from './WhyChooseAnbu';
 import Tools from './Tools';

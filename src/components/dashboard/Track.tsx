@@ -5,11 +5,13 @@ import { Droplet, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCycleLogs, useCyclePredictions } from '@/hooks/useCycle';
 import { formatPredictionDate } from '@/services/predictions';
 import BottomNavigation from './BottomNavigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Track = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showLogModal, setShowLogModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [direction, setDirection] = useState(0);
   
   // Fetch cycle data
   const { logs, logsLoading, error: logsError, createLog } = useCycleLogs();
@@ -27,10 +29,12 @@ const Track = () => {
   const firstDayOfMonth = new Date(year, month, 1).getDay();
 
   const prevMonth = () => {
+    setDirection(-1);
     setCurrentDate(new Date(year, month - 1, 1));
   };
 
   const nextMonth = () => {
+    setDirection(1);
     setCurrentDate(new Date(year, month + 1, 1));
   };
 
@@ -86,6 +90,26 @@ const Track = () => {
     return '';
   };
 
+  const calendarVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 300 : -300,
+      opacity: 0,
+    }),
+  };
+
+  const dayVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1 },
+  };
+
   const calendarDays = [];
   // Empty cells for days before the first day of the month
   for (let i = 0; i < firstDayOfMonth; i++) {
@@ -93,13 +117,32 @@ const Track = () => {
   }
   // Days of the month
   for (let day = 1; day <= daysInMonth; day++) {
+    const hasLog = logs.some(log => {
+      const logDateStr = log.date || log.createdAt;
+      const logDate = new Date(logDateStr).toISOString().split('T')[0];
+      return logDate === `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    });
     calendarDays.push(
-      <div key={day} className={getDayClass(day)}>
+      <motion.div
+        key={day}
+        className={getDayClass(day)}
+        variants={dayVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.3, delay: hasLog ? 0.1 : 0 }}
+      >
         {day}
         {getDayEmoji(day) && (
-          <span className="absolute -top-1 -right-1 text-xs">{getDayEmoji(day)}</span>
+          <motion.span
+            className="absolute -top-1 -right-1 text-xs"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 500, delay: 0.2 }}
+          >
+            {getDayEmoji(day)}
+          </motion.span>
         )}
-      </div>
+      </motion.div>
     );
   }
 
@@ -121,13 +164,31 @@ const Track = () => {
       <section className="px-4 py-6">
         <div className="max-w-md mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <button onClick={prevMonth} className="p-2 rounded-full hover:bg-muted">
+            <motion.button
+              onClick={prevMonth}
+              className="p-2 rounded-full hover:bg-muted"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <ChevronLeft className="w-5 h-5" />
-            </button>
-            <h2 className="font-headline text-xl font-semibold">{monthNames[month]} {year}</h2>
-            <button onClick={nextMonth} className="p-2 rounded-full hover:bg-muted">
+            </motion.button>
+            <motion.h2
+              className="font-headline text-xl font-semibold"
+              key={`${month}-${year}`}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {monthNames[month]} {year}
+            </motion.h2>
+            <motion.button
+              onClick={nextMonth}
+              className="p-2 rounded-full hover:bg-muted"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <ChevronRight className="w-5 h-5" />
-            </button>
+            </motion.button>
           </div>
           <div className="grid grid-cols-7 gap-2 mb-4 text-center font-body text-sm text-muted">
             <div>S</div>
@@ -138,9 +199,23 @@ const Track = () => {
             <div>F</div>
             <div>S</div>
           </div>
-          <div className="grid grid-cols-7 gap-2">
-            {calendarDays}
-          </div>
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={`${year}-${month}`}
+              custom={direction}
+              variants={calendarVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: 'spring', stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 },
+              }}
+              className="grid grid-cols-7 gap-2"
+            >
+              {calendarDays}
+            </motion.div>
+          </AnimatePresence>
           <div className="flex justify-center mt-4 space-x-4 text-xs font-body">
             <div className="flex items-center">
               <span className="w-3 h-3 bg-red-100 rounded-full mr-1"></span>
@@ -155,16 +230,19 @@ const Track = () => {
               Today
             </div>
           </div>
-          <button 
+          <motion.button
             onClick={() => {
               setSelectedDate(new Date().toISOString().split('T')[0]);
               setShowLogModal(true);
             }}
-            className="w-full mt-6 bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 disabled:opacity-50"
+            className="w-full mt-6 bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft disabled:opacity-50"
             disabled={logsLoading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
           >
             {logsLoading ? 'Loading...' : 'Log Today&apos;s Details'}
-          </button>
+          </motion.button>
           {logsError && <p className="text-accent text-sm mt-2">{logsError}</p>}
         </div>
       </section>
@@ -173,7 +251,7 @@ const Track = () => {
       <section className="px-4 py-6">
         <div className="max-w-md mx-auto space-y-4">
           {predictionsLoading ? (
-            <div className="bg-blush rounded-2xl p-4 shadow-soft animate-pulse">
+            <div className="bg-blush rounded-2xl p-4 shadow-soft">
               <div className="h-6 bg-muted/20 rounded w-3/4"></div>
             </div>
           ) : predictionsError ? (
@@ -226,9 +304,22 @@ const Track = () => {
       </section>
 
       {/* Log Modal */}
-      {showLogModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-bg rounded-2xl p-6 max-w-sm w-full max-h-96 overflow-y-auto">
+      <AnimatePresence>
+        {showLogModal && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-bg rounded-2xl p-6 max-w-sm w-full max-h-96 overflow-y-auto"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.3, type: 'spring', stiffness: 300 }}
+            >
             <h2 className="font-headline text-xl font-semibold mb-4">Log Your Period</h2>
             
             <div className="space-y-4">
@@ -311,9 +402,10 @@ const Track = () => {
                 Save Log
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <BottomNavigation />
     </div>

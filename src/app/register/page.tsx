@@ -9,6 +9,7 @@ import { RegisterPayload } from '@/types/api';
 import { formatErrorForDisplay, parseValidationErrors, isNetworkError } from '@/libs/error-handler';
 import { validatePassword, getPasswordErrorMessage } from '@/utils/passwordValidation';
 import AuthRedirect from '@/components/AuthRedirect';
+import { motion } from 'framer-motion';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -98,39 +99,76 @@ export default function Register() {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4 },
+    },
+  };
+
   return (
     <AuthRedirect>
-      <div className="min-h-screen bg-linear-to-br from-sand to-rose flex items-center justify-center px-4 py-8">
-      <div className="max-w-md w-full animate-fade-in">
+      <motion.div
+        className="min-h-screen bg-linear-to-br from-sand to-rose flex items-center justify-center px-4 py-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="max-w-md w-full">
         {/* Logo and Header */}
-        <div className="text-center mb-6">
-          <Link href="/">
-            <Image
-              className="mx-auto mb-4 hover:scale-105 transition-transform duration-300"
-              src="/anbu logo svg.svg"
-              alt="Anbu Gynaecare Logo"
-              width={80}
-              height={64}
-            />
-          </Link>
-          <h1 className="font-headline text-3xl font-semibold text-text mb-2">
+        <motion.div className="text-center mb-6" variants={itemVariants}>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link href="/">
+              <Image
+                className="mx-auto mb-4"
+                src="/anbu logo svg.svg"
+                alt="Anbu Gynaecare Logo"
+                width={80}
+                height={64}
+              />
+            </Link>
+          </motion.div>
+          <motion.h1
+            className="font-headline text-3xl font-semibold text-text mb-2"
+            variants={itemVariants}
+          >
             Join Anbu
-          </h1>
-          <p className="font-body text-muted">
+          </motion.h1>
+          <motion.p
+            className="font-body text-muted"
+            variants={itemVariants}
+          >
             Start your wellness journey today 🌸
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Card */}
-        <div className="bg-glass backdrop-blur-sm rounded-2xl shadow-soft p-8 border border-white/50">
+        <motion.div
+          className="bg-glass backdrop-blur-sm rounded-2xl shadow-soft p-8 border border-white/50"
+          variants={itemVariants}
+        >
           {error && (
-            <div className="mb-6 p-4 bg-accent/10 border border-accent/30 rounded-2xl animate-slide-up">
+            <div className="mb-6 p-4 bg-accent/10 border border-accent/30 rounded-2xl">
               <p className="font-body text-sm text-accent text-center">{error}</p>
             </div>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <motion.div variants={itemVariants}>
               <label htmlFor="name" className="block font-body text-sm font-medium text-text mb-2">
                 Name
               </label>
@@ -145,9 +183,9 @@ export default function Register() {
                 required
                 disabled={loading}
               />
-            </div>
+            </motion.div>
             
-            <div className="animate-slide-up" style={{ animationDelay: '0.15s' }}>
+            <motion.div variants={itemVariants}>
               <label htmlFor="email" className="block font-body text-sm font-medium text-text mb-2">
                 Email
               </label>
@@ -162,9 +200,9 @@ export default function Register() {
                 required
                 disabled={loading}
               />
-            </div>
+            </motion.div>
             
-            <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <motion.div variants={itemVariants}>
               <label htmlFor="age" className="block font-body text-sm font-medium text-text mb-2">
                 Age
               </label>
@@ -180,10 +218,10 @@ export default function Register() {
                 disabled={loading}
                 min="13"
               />
-            </div>
+            </motion.div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="animate-slide-up" style={{ animationDelay: '0.25s' }}>
+            <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
                 <label htmlFor="password" className="block font-body text-sm font-medium text-text mb-2">
                   Password
                 </label>
@@ -221,7 +259,7 @@ export default function Register() {
                 )}
               </div>
               
-              <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
+              <div>
                 <label htmlFor="confirmPassword" className="block font-body text-sm font-medium text-text mb-2">
                   Confirm Password
                 </label>
@@ -247,25 +285,28 @@ export default function Register() {
                   <p className="font-body text-sm text-accent mt-1">{confirmPasswordError}</p>
                 )}
               </div>
-            </div>
+            </motion.div>
             
-            <button
+            <motion.button
               type="submit"
               disabled={loading}
-              className="w-full bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:cursor-not-allowed animate-slide-up mt-2"
-              style={{ animationDelay: '0.35s' }}
+              className="w-full bg-accent text-bg font-semibold py-3 px-6 rounded-2xl shadow-soft disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              variants={itemVariants}
             >
               {loading ? 'Creating Account...' : 'Get Started Free'}
-            </button>
+            </motion.button>
           </form>
           
-          <p className="font-body text-xs text-muted text-center mt-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          <p className="font-body text-xs text-muted text-center mt-4">
             By signing up, you agree to our Terms & Privacy.
           </p>
-        </div>
+        </motion.div>
 
         {/* Footer Links */}
-        <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+        <div className="text-center mt-6">
           <p className="font-body text-sm text-muted">
             Already have an account?{' '}
             <Link href="/login" className="text-accent font-semibold hover:underline transition-colors">
@@ -276,8 +317,8 @@ export default function Register() {
             ← Back to Home
           </Link>
         </div>
-      </div>
-    </div>
+        </div>
+      </motion.div>
     </AuthRedirect>
   );
 }

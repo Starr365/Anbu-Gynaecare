@@ -7,6 +7,7 @@ import { useCyclePredictions, useCycleLogs } from '@/hooks/useCycle';
 import { formatPredictionDate } from '@/services/predictions';
 import BottomNavigation from './BottomNavigation';
 import CycleOnboarding from '../CycleOnboarding';
+import { motion } from 'framer-motion';
 
 const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -45,8 +46,34 @@ const Dashboard = () => {
   const dismissTooltips = () => {
     setShowTooltips(false);
   };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6 },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-rose pb-13">
+    <motion.div
+      className="min-h-screen bg-rose pb-13"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <div className='max-w-md mx-auto bg-bg shadow-md'>
       {/* Welcome Header */}
       <section className="bg-linear-to-r from-rose to-blush text-text px-4 py-8">
@@ -85,8 +112,13 @@ const Dashboard = () => {
 
       {/* Begin Cycle Tracking Card */}
       {!hasCompletedOnboarding && (
-        <section className="px-4 py-6">
-          <div className="max-w-md mx-auto bg-accent text-bg rounded-2xl p-6 shadow-soft animate-slide-up">
+        <motion.section
+          className="px-4 py-6"
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <div className="max-w-md mx-auto bg-accent text-bg rounded-2xl p-6 shadow-soft">
             <div className="text-center">
               <Calendar className="w-12 h-12 mx-auto mb-4" />
               <h2 className="font-headline text-xl font-semibold mb-2">Begin Cycle Tracking</h2>
@@ -101,13 +133,13 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-        </section>
+        </motion.section>
       )}
 
       {/* Next Period Countdown */}
       {hasCompletedOnboarding && (
         <section className="px-4 py-6">
-        <div className="max-w-md mx-auto bg-blush rounded-2xl p-6 shadow-soft animate-slide-up">
+        <div className="max-w-md mx-auto bg-blush rounded-2xl p-6 shadow-soft">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-headline text-xl font-semibold text-text">Next Period In</h2>
             <Calendar className="w-6 h-6 text-accent" />
@@ -138,8 +170,8 @@ const Dashboard = () => {
             Track Today
           </Link>
         </div>
-        </section>
-      )}
+      </section>
+    )}
 
       {/* Quick Actions */}
       <section className="px-4 py-6">
@@ -257,7 +289,7 @@ const Dashboard = () => {
           onComplete={handleOnboardingComplete}
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 
